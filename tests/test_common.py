@@ -1405,7 +1405,7 @@ def test_de_difference_time_series_23(
     arr_len=st.integers(min_value=4, max_value=1000),
     seed=st.integers(min_value=1, max_value=1_000_000))
 @settings(print_blob=True)
-def test_de_difference_time_series_23(
+def test_de_difference_time_series_24(
     low: int, high: int, arr_len: int, seed: int):
     """
     Test simple differencing only:  invert differencing
