@@ -3,6 +3,7 @@
 import subprocess
 import numpy as np
 import pandas as pd
+import polars as pl
 from pathlib import Path
 from dataclasses import dataclass, field, fields
 
@@ -581,3 +582,34 @@ def plot_time_series_and_model_values_3(
     plt.savefig(output_filepath)
     plt.clf()
     plt.close()
+
+
+##################################################
+# TEXTBOOK MODEL RESULTS
+##################################################
+
+def transcribe_fpp2_8_5_model_results() -> tuple[pl.DataFrame, dict[str, float]]:
+    """
+    Model results from:
+
+        https://otexts.com/fpp2/non-seasonal-arima.html
+        8.5 Non-seasonal ARIMA models
+    """
+
+    coef_dict = {
+        'label': ['ar1', 'ma1', 'ma2', 'ma3', 'mean'],
+        'coef':  [0.589, -0.353, 0.085, 0.174, 0.745],
+        'se':    [0.154,  0.166, 0.082, 0.084, 0.093]}
+    coef_df = pl.DataFrame(coef_dict)
+
+    summary_dict = {
+        'sigma^2': 0.35,
+        'log_likelihood': -164.8,
+        'AIC': 341.6,
+        'AICc': 342.1,
+        'BIC': 361,
+        'c': 0.307}
+
+    return coef_df, summary_dict
+
+

@@ -5,44 +5,25 @@ import polars as pl
 import pyreadr
 from pathlib import Path
 
+from cmdstanpy import CmdStanModel
 import statsmodels.tsa.statespace.sarimax as sarimax
+
+import arviz as az
+import matplotlib.pyplot as plt
 
 try:
     from src.common import (
         write_list_to_text_file,
         plot_time_series,
+        transcribe_fpp2_8_5_model_results,
         )
 
 except:
     from common import (
         write_list_to_text_file,
         plot_time_series,
+        transcribe_fpp2_8_5_model_results,
         )
-
-
-def transcribe_fpp2_8_5_model_results() -> tuple[pl.DataFrame, dict[str, float]]:
-    """
-    Model results from:
-
-        https://otexts.com/fpp2/non-seasonal-arima.html
-        8.5 Non-seasonal ARIMA models
-    """
-
-    coef_dict = {
-        'label': ['ar1', 'ma1', 'ma2', 'ma3', 'mean'],
-        'coef':  [0.589, -0.353, 0.085, 0.174, 0.745],
-        'se':    [0.154,  0.166, 0.082, 0.084, 0.093]}
-    coef_df = pl.DataFrame(coef_dict)
-
-    summary_dict = {
-        'sigma^2': 0.35,
-        'log_likelihood': -164.8,
-        'AIC': 341.6,
-        'AICc': 342.1,
-        'BIC': 361,
-        'c': 0.307}
-
-    return coef_df, summary_dict
 
 
 def run_sarimax_model(
