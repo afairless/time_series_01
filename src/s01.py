@@ -1,27 +1,22 @@
 #! /usr/bin/env python3
 
 import numpy as np
-import pandas as pd
 import polars as pl
 import pyreadr
 from pathlib import Path
 
-from cmdstanpy import CmdStanModel
 import statsmodels.tsa.statespace.sarimax as sarimax
-
-import arviz as az
-import matplotlib.pyplot as plt
 
 try:
     from src.common import (
+        write_list_to_text_file,
         plot_time_series,
-        plot_time_series_autocorrelation,
         )
 
 except:
     from common import (
+        write_list_to_text_file,
         plot_time_series,
-        plot_time_series_autocorrelation,
         )
 
 
@@ -50,18 +45,15 @@ def transcribe_fpp2_8_5_model_results() -> tuple[pl.DataFrame, dict[str, float]]
     return coef_df, summary_dict
 
 
-def main():
+def run_sarimax_model(
+    input_path: Path) -> tuple[np.ndarray, sarimax.SARIMAXResultsWrapper]:
+    """
+    Run SARIMAX model on the downloaded time series data from 'fpp2' textbook
+    """
 
-    input_path = Path.cwd() / 'input'
     input_filepath = input_path / 'uschange.rda'
     df = pyreadr.read_r(input_filepath)['uschange']
     df = pl.DataFrame(pyreadr.read_r(input_filepath)['uschange'])
-
-    output_path = Path.cwd() / 'output'
-    output_path.mkdir(exist_ok=True, parents=True)
-
-    md_filepath = output_path / 'differencing.md'
-    md = []
 
     time_series = df['Consumption'].to_numpy()
 
@@ -70,8 +62,14 @@ def main():
     model_result = sarimax.SARIMAX(time_series, order=order, trend='c').fit()
     assert isinstance(model_result, sarimax.SARIMAXResultsWrapper)
 
-    model_result.summary()
-    dir(model_result)
+    return time_series, model_result
+
+
+def compare_model_results(model_result: sarimax.SARIMAXResultsWrapper):
+    """
+    Verify that results from sarimax model match results from the 'fpp2' 
+        textbook example
+    """
 
     coef_df, summary_dict = transcribe_fpp2_8_5_model_results()
 
@@ -97,17 +95,62 @@ def main():
         summary_dict['sigma^2'], model_result.params[-1], atol=1e-1)
 
 
-    plt.plot(time_series)
-    plt.show()
-    plt.clf()
-    plt.close()
+def report_model_result_comparison(
+    input_path: Path, output_path: Path, time_series_plot_filepath: Path,
+    model_result: sarimax.SARIMAXResultsWrapper):
+    """
+    Save time series plots and model results from 'fpp2' textbook and SARIMAX
+        model in markdown file
+    """
+
+    md_filepath = output_path / 'differencing.md'
+    md = []
+
+    md.append(
+        '## Downloaded time series data looks identical to Figure 8.7 in '
+        '"fpp2" textbook')
+    figure_8_7_filepath = input_path / 'fpp2_book' / 'Figure_8.7.png'
+    figure_8_7_relative_filepath = (
+        figure_8_7_filepath.__str__().replace(Path.cwd().__str__(), '..'))
+    md.append('\n')
+    md.append('![Image](' + figure_8_7_relative_filepath + '){width=640}')
+    md.append('\n')
+    md.append('![Image](' + time_series_plot_filepath.name + '){width=640}')
+    md.append('\n')
 
 
+    md.append('## Results of "fpp2" textbook and SARIMAX models match')
+    fpp2_results_filepath = (
+        input_path / 'fpp2_book' / 'ARIMA(1,0,3)_results.png')
+    fpp2_results_relative_filepath = (
+        fpp2_results_filepath.__str__().replace(Path.cwd().__str__(), '..'))
+    md.append('\n')
+    md.append('![Image](' + fpp2_results_relative_filepath + '){width=640}')
+    md.append('\n')
+
+    md.append(model_result.summary().as_html())
+
+    write_list_to_text_file(md, md_filepath, True)
 
 
+def main():
 
+    input_path = Path.cwd() / 'input'
 
+    output_path = Path.cwd() / 'output'
+    output_path.mkdir(exist_ok=True, parents=True)
 
+    time_series, model_result = run_sarimax_model(input_path)
+    compare_model_results(model_result)
+
+    output_filepath = output_path / 'time_series.png'
+    plot_time_series(
+        time_series.reshape(1, -1),
+        title='Downloaded time series',
+        output_filepath=output_filepath)
+
+    report_model_result_comparison(
+        input_path, output_path, output_filepath, model_result)
 
 
 if __name__ == '__main__':
