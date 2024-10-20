@@ -5,6 +5,9 @@
 src/.RData
 src/.Rhistory
 src/.Rprofile
+src/stan/*
+!src/stan/s05_ar1.stan
+
 
 # https://github.com/github/gitignore/blob/main/Python.gitignore
 #################################################

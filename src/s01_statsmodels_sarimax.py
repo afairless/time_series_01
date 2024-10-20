@@ -114,7 +114,7 @@ def main():
 
     input_path = Path.cwd() / 'input'
 
-    output_path = Path.cwd() / 'output'
+    output_path = Path.cwd() / 'output' / 's01'
     output_path.mkdir(exist_ok=True, parents=True)
 
     time_series, model_result = run_sarimax_model(input_path)
