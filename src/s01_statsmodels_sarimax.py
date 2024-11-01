@@ -80,7 +80,7 @@ def report_model_result_comparison(
         model in markdown file
     """
 
-    md_filepath = output_path / 'differencing.md'
+    md_filepath = output_path / 'report.md'
     md = []
 
     md.append(
