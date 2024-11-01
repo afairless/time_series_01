@@ -103,7 +103,7 @@ def compare_sarimax_stan_models(sarimax_result, stan_result):
     print('Results of SARIMAX and Stan models approximately match')
 
 
-def report_model_result_comparison(
+def report_model_result(
     output_path: Path, model_result: sarimax.SARIMAXResultsWrapper):
     """
     Save time series plots and model results from 'fpp2' textbook and SARIMAX
@@ -146,7 +146,7 @@ def main():
     stan_result = run_stan_model(stan_path, time_series, output_path)
     compare_sarimax_stan_models(sarimax_result, stan_result)
 
-    report_model_result_comparison(output_path, sarimax_result)
+    report_model_result(output_path, sarimax_result)
 
 
 

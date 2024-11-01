@@ -10,6 +10,17 @@ from cmdstanpy.stanfit.mcmc import CmdStanMCMC
 import statsmodels.tsa.statespace.sarimax as sarimax
 
 
+try:
+    from src.common import (
+        write_list_to_text_file,
+        )
+
+except:
+    from common import (
+        write_list_to_text_file,
+        )
+
+
 def load_data(input_path: Path) -> np.ndarray:
     """
     Load data from 'uschange.rda' file
@@ -45,7 +56,7 @@ def run_stan_model(
         'T': len(time_series), 
         'y': time_series}
 
-    stan_filename = 's04_ark.stan'
+    stan_filename = 's04_arp.stan'
     stan_filepath = stan_path / stan_filename
     model = CmdStanModel(stan_file=stan_filepath)
 
@@ -98,6 +109,23 @@ def compare_sarimax_stan_models(sarimax_result, stan_result):
     print('Results of SARIMAX and Stan models approximately match')
 
 
+def report_model_result(
+    ar: int, output_path: Path, model_result: sarimax.SARIMAXResultsWrapper):
+    """
+    Save time series plots and model results from 'fpp2' textbook and SARIMAX
+        model in markdown file
+    """
+
+    md_filepath = output_path / f'report_{ar}.md'
+    md = []
+
+    md.append('## SARIMAX model results')
+
+    md.append(model_result.summary().as_html())
+
+    write_list_to_text_file(md, md_filepath, True)
+
+
 def main():
     """
     Compare Stan model that accommodates AR(P) with corresponding SARIMAX model
@@ -114,7 +142,7 @@ def main():
 
         # order, AR/p, d, MA/q
         order = (ar, 0, 0)
-        output_path = Path.cwd() / 'output' / 's04_ark' / f'ar{ar}'
+        output_path = Path.cwd() / 'output' / 's04_arp' / f'ar{ar}'
         output_path.mkdir(exist_ok=True, parents=True)
 
         print(f'Comparing models for AR({ar})')
@@ -122,6 +150,8 @@ def main():
         sarimax_result = run_sarimax_model(time_series, order)
         stan_result = run_stan_model(stan_path, time_series, order, output_path)
         compare_sarimax_stan_models(sarimax_result, stan_result)
+
+        report_model_result(ar, output_path, sarimax_result)
 
 
 if __name__ == '__main__':
