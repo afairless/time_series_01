@@ -7,6 +7,21 @@
 library(bayesforecast)
 
 
+load_data <- function() {
+  # Load 'Consumption' time series data from the 'uschange.rda' file
+
+  input_filepath <- paste("..", "input", "uschange.rda", sep = "/")
+  load(input_filepath)
+  # head(uschange)
+  # colnames(uschange)
+
+  time_series <- as.vector(uschange[ , "Consumption"])
+
+  return(time_series)
+
+}
+
+
 mkdir <- function(directory_path) {
   # Create directory at 'directory_path' if it does not exist
 
@@ -16,58 +31,59 @@ mkdir <- function(directory_path) {
 
 }
 
-input_filepath <- paste("..", "input", "uschange.rda", sep = "/")
-load(input_filepath)
-# head(uschange)
-# colnames(uschange)
 
-# time_series = uschange[ , "Consumption"]
-time_series <- as.vector(uschange[ , "Consumption"])
-
-ar = 1
-# order, AR/p, d, MA/q
-order = c(ar, 0, 3)
-# seasonal order, AR/P, D, MA/Q
-seasonal_order = c(0, 0, 0)
-
-output_path <- paste(
-  "..", 
-  "output", 
-  "s06_bayesforecast", 
-  paste("ar", as.character(ar), sep = ''), 
-  sep = "/")
-
-mkdir(output_path)
-
-set.seed(874310)
-model_result = stan_sarima(
-  time_series, order=order, seasonal=seasonal_order,
-  prior_ar=normal(0.6, 0.2), 
-  stepwise=F, chains=6, iter=16000, warmup=4000)
+run_model <- function(time_series, order, seasonal_order, output_path, seed) {
+  # Fit a bayesforecast/Stan SARIMA model with the given 'order' and 
+  #   'seasonal_order' on the given 'time_series' data
+  # Save the results in 'output_path'
 
 
-methods(class = class(model_result))
+  # RUN MODEL
+  ##################################################
+
+  set.seed(seed)
+  model_result = stan_sarima(
+    time_series, order=order, seasonal=seasonal_order,
+    prior_ar=normal(0.6, 0.2), 
+    stepwise=F, chains=6, iter=16000, warmup=4000)
 
 
+  # SAVE RESULTS
+  ##################################################
+
+  output_filepath = paste(output_path, "summary.csv", sep = "/")
+  summary_df = summary(model_result)
+  write.csv(summary_df, file=output_filepath, row.names=T)
+
+  output_filepath = paste(output_path, "report.txt", sep = "/")
+  sink(output_filepath)
+  report(model_result)
+  print(model_result)
+  waic(model_result)
+  sink()
+
+}
 
 
-
-# to df
-summary_df = summary(model_result)
-output_filepath = paste(output_path, "summary.csv", sep = "/")
-write.csv(summary_df, file=output_filepath, row.names=T)
+main <- function() {
 
 
-# to text
-output_filepath = paste(output_path, "report.txt", sep = "/")
-sink(output_filepath)
-report(model_result)
-# prior_summary(model_result)
-# model(model_result)
-print(model_result)
-waic(model_result)
-sink()
+  output_path <- paste("..", "output", "s06_bayesforecast", sep = "/")
+
+  time_series = load_data()
 
 
+  # order, AR/p, d, MA/q
+  order = c(1, 0, 3)
+  # seasonal order, AR/P, D, MA/Q
+  seasonal_order = c(0, 0, 0)
 
+  output_subpath <- paste(output_path, 'sub1', sep = "/")
+  mkdir(output_path)
+  run_model(time_series, order, seasonal_order, output_subpath, seed=874310)
+
+}
+
+
+main()
 

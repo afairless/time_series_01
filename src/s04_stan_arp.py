@@ -23,7 +23,7 @@ except:
 
 def load_data(input_path: Path) -> np.ndarray:
     """
-    Load data from 'uschange.rda' file
+    Load 'Consumption' time series data from the 'uschange.rda' file
     """
 
     input_filepath = input_path / 'uschange.rda'
