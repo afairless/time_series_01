@@ -46,7 +46,6 @@ model_result = stan_sarima(
   stepwise=F, chains=6, iter=16000, warmup=4000)
 
 
-class(model_result)
 methods(class = class(model_result))
 
 
@@ -54,12 +53,21 @@ methods(class = class(model_result))
 
 
 # to df
-summary(model_result)
+summary_df = summary(model_result)
+output_filepath = paste(output_path, "summary.csv", sep = "/")
+write.csv(summary_df, file=output_filepath, row.names=T)
+
 
 # to text
+output_filepath = paste(output_path, "report.txt", sep = "/")
+sink(output_filepath)
 report(model_result)
 # prior_summary(model_result)
 # model(model_result)
 print(model_result)
 waic(model_result)
+sink()
+
+
+
 
