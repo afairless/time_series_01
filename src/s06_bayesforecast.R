@@ -32,7 +32,8 @@ mkdir <- function(directory_path) {
 }
 
 
-run_model <- function(time_series, order, seasonal_order, output_path, seed) {
+run_model <- function(
+  time_series, order, seasonal_order, prior_ar, output_path, seed) {
   # Fit a bayesforecast/Stan SARIMA model with the given 'order' and 
   #   'seasonal_order' on the given 'time_series' data
   # Save the results in 'output_path'
@@ -44,7 +45,7 @@ run_model <- function(time_series, order, seasonal_order, output_path, seed) {
   set.seed(seed)
   model_result = stan_sarima(
     time_series, order=order, seasonal=seasonal_order,
-    prior_ar=normal(0.6, 0.2), 
+    prior_ar=prior_ar,
     stepwise=F, chains=6, iter=16000, warmup=4000)
 
 
@@ -78,9 +79,25 @@ main <- function() {
   # seasonal order, AR/P, D, MA/Q
   seasonal_order = c(0, 0, 0)
 
-  output_subpath <- paste(output_path, 'sub1', sep = "/")
-  mkdir(output_path)
-  run_model(time_series, order, seasonal_order, output_subpath, seed=874310)
+
+  # model with default AR prior
+  ##################################################
+
+  prior_ar = normal(0, 0.5)
+  output_subpath <- paste(output_path, 'default_ar_prior', sep = "/")
+  mkdir(output_subpath)
+  run_model(
+    time_series, order, seasonal_order, prior_ar, output_subpath, seed=874310)
+
+
+  # model with fairly strong, "correct" AR prior
+  ##################################################
+
+  prior_ar = normal(0.6, 0.2)
+  output_subpath <- paste(output_path, 'custom_ar_prior_01', sep = "/")
+  mkdir(output_subpath)
+  run_model(
+    time_series, order, seasonal_order, prior_ar, output_subpath, seed=874310)
 
 }
 
