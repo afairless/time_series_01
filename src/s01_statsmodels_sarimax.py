@@ -88,7 +88,7 @@ def report_model_result_comparison(
         '"fpp2" textbook')
     figure_8_7_filepath = input_path / 'fpp2_book' / 'Figure_8.7.png'
     figure_8_7_relative_filepath = (
-        figure_8_7_filepath.__str__().replace(Path.cwd().__str__(), '..'))
+        figure_8_7_filepath.__str__().replace(Path.cwd().__str__(), '../..'))
     md.append('\n')
     md.append('![Image](' + figure_8_7_relative_filepath + '){width=640}')
     md.append('\n')
@@ -100,7 +100,7 @@ def report_model_result_comparison(
     fpp2_results_filepath = (
         input_path / 'fpp2_book' / 'ARIMA(1,0,3)_results.png')
     fpp2_results_relative_filepath = (
-        fpp2_results_filepath.__str__().replace(Path.cwd().__str__(), '..'))
+        fpp2_results_filepath.__str__().replace(Path.cwd().__str__(), '../..'))
     md.append('\n')
     md.append('![Image](' + fpp2_results_relative_filepath + '){width=640}')
     md.append('\n')
